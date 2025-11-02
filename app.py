@@ -573,12 +573,13 @@ def create_gap_evolution_chart(stage_data, latest_stage):
                     gaps_list.append(gap_seconds / 60)  # Convert to minutes
             
             if stages_list and any(gap > 0 for gap in gaps_list):  # Don't show leader line
-                # Create customdata with formatted gap times
-                customdata = []
+                # Create complete hover text strings
+                hover_texts = []
                 for i, stage in enumerate(stages_list):
                     gap_seconds = gaps_list[i] * 60  # Convert back to seconds
                     gap_time_str = calculate_time_gap(0, int(gap_seconds))  # Format as "+H:MM:SS"
-                    customdata.append(gap_time_str)
+                    hover_text = f"{participant} - Stage {stage}: {gap_time_str}"
+                    hover_texts.append(hover_text)
 
                 fig.add_trace(go.Scatter(
                     x=stages_list,
@@ -587,8 +588,8 @@ def create_gap_evolution_chart(stage_data, latest_stage):
                     name=participant,
                     line=dict(color=colors.get(participant, '#FFFFFF'), width=3),
                     marker=dict(size=8, color=colors.get(participant, '#FFFFFF')),
-                    hovertemplate='%{fullData.name}<br>Stage: %{x}<br>Gap: %{customdata}<extra></extra>',
-                    customdata=customdata
+                    hoverinfo='text',
+                    text=hover_texts
                 ))
     
     # Dark theme styling with mobile responsiveness
@@ -604,12 +605,6 @@ def create_gap_evolution_chart(stage_data, latest_stage):
         paper_bgcolor='#1e1e1e',
         font=dict(color='#FFFFFF', size=11),
         hovermode='closest',
-        hoverlabel=dict(
-            bgcolor='#2d2d2d',
-            font_size=12,
-            font_family='monospace',
-            font_color='#FFFFFF'
-        ),
         xaxis=dict(
             gridcolor='#404040',
             tickmode='linear',
@@ -736,11 +731,11 @@ def get_dark_theme_css():
     """Return dark theme CSS with animated transitions"""
     return """
     <style>
-    /* Global animations and transitions */
-    * {
+    /* Global animations and transitions - excluding Plotly charts */
+    *:not(.js-plotly-plot):not(.plotly):not(.main-svg):not(g):not(path):not(text):not(svg) {
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    
+
     .stApp {
         background-color: #1e1e1e;
         color: #ffffff;
