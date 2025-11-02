@@ -1,60 +1,26 @@
 """
-Team Roster Configuration for Fantasy Tour de France 2025
+Team Roster Configuration - LEGACY FILE (Backwards Compatibility)
 
-This file defines which professional riders are on each fantasy participant's team.
-Update this file to change team rosters.
+NOTE: This file is maintained for backwards compatibility only.
+All race configurations have been moved to races_config.py
 
-Format:
-- Keys are fantasy participant names (Jeremy, Leo, Charles, Aaron, Nate)
-- Values are lists of rider URLs from procyclingstats.com
-- Rider URLs should be in format: "rider/firstname-lastname"
-
-Example: "rider/tadej-pogacar" for Tadej Pogačar
-
-To find a rider's URL:
-1. Go to procyclingstats.com
-2. Search for the rider
-3. Copy the last part of the URL (e.g., "rider/jonas-vingegaard")
+For multi-race support, import from races_config.py instead:
+    from races_config import RACES, TEAM_ROSTERS, get_race_config, get_team_rosters
 """
 
-TEAM_ROSTERS = {
-    "Jeremy": [
-        "rider/sepp-kuss",
-        "rider/jhonatan-narvaez",
-        "rider/ben-healy"
-    ],
-    "Leo": [
-        "rider/felix-gall",
-        "rider/kevin-vauquelin",
-        "rider/guillaume-martin"
-    ],
-    "Charles": [
-        "rider/jordan-jegat",
-        "rider/tobias-halland-johannessen",
-        "rider/aleksandr-vlasov"
-    ],
-    "Aaron": [
-        "rider/florian-lipowitz",
-        "rider/oscar-onley",
-        "rider/ben-o-connor"
-    ],
-    "Nate": [
-        "rider/primoz-roglic",
-        "rider/valentin-paret-peintre",
-        "rider/geraint-thomas"
-    ]
-}
+# Import from new races_config.py for backwards compatibility
+from races_config import TEAM_ROSTERS as _ALL_ROSTERS, RACES, DEFAULT_RACE
 
-# Race configuration
+# Export TDF 2025 config as default for backwards compatibility
+TEAM_ROSTERS = _ALL_ROSTERS[DEFAULT_RACE]
 RACE_CONFIG = {
-    # The URL path for the race on procyclingstats.com
-    # Format: "race/race-name/YEAR"
-    # Example: "race/tour-de-france/2025"
-    "race_url": "race/tour-de-france/2025",
-
-    # Race name for display
-    "race_name": "Tour de France 2025",
-
-    # Total number of stages
-    "total_stages": 21,
+    "race_url": RACES[DEFAULT_RACE]["race_url"],
+    "race_name": RACES[DEFAULT_RACE]["name"],
+    "total_stages": RACES[DEFAULT_RACE]["total_stages"]
 }
+
+# Note: For new code, use races_config.py directly
+# Example:
+#   from races_config import get_race_config, get_team_rosters
+#   race = get_race_config("tdf-2026")
+#   rosters = get_team_rosters("tdf-2026")
