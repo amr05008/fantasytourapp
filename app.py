@@ -1,11 +1,17 @@
 import streamlit as st
 import pandas as pd
-import requests
 from datetime import datetime
-import time
-import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+
+# Import API client for procyclingstats data
+from api_client import (
+    fetch_fantasy_standings,
+    fetch_stage_by_stage_data,
+    seconds_to_time_str,
+    time_str_to_seconds
+)
+from team_config import TEAM_ROSTERS, RACE_CONFIG
 
 # Page configuration
 st.set_page_config(
@@ -95,31 +101,8 @@ COMPETITION_CONFIG = {
     "show_celebration": True  # Show celebration banner and styling
 }
 
-# Google Sheets CSV export URLs
-SHEET_URL = "https://docs.google.com/spreadsheets/d/1_dYs_80Xdi39_-vtZYxt6l4Mj_0jFuHSf4p79zcBI4M/export?format=csv&gid=0"
-RIDERS_SHEET_URL = "https://docs.google.com/spreadsheets/d/1_dYs_80Xdi39_-vtZYxt6l4Mj_0jFuHSf4p79zcBI4M/export?format=csv&gid=667768222"
-
-def time_to_seconds(time_str):
-    """Convert time string (H:MM:SS) to seconds for comparison"""
-    try:
-        if pd.isna(time_str) or time_str == "0:00:00" or time_str == "":
-            return 0
-        parts = str(time_str).split(':')
-        hours = int(parts[0])
-        minutes = int(parts[1])
-        seconds = int(parts[2])
-        return hours * 3600 + minutes * 60 + seconds
-    except:
-        return 0
-
-def seconds_to_time_str(seconds):
-    """Convert seconds back to time string format"""
-    if seconds == 0:
-        return "0:00:00"
-    hours = seconds // 3600
-    minutes = (seconds % 3600) // 60
-    secs = seconds % 60
-    return f"{hours}:{minutes:02d}:{secs:02d}"
+# Time conversion functions are now imported from api_client
+# (time_str_to_seconds and seconds_to_time_str)
 
 def calculate_time_gap(leader_time, participant_time):
     """Calculate time gap between leader and participant"""
@@ -313,139 +296,8 @@ def create_sharing_buttons():
         </button>
         """, unsafe_allow_html=True)
 
-@st.cache_data(ttl=300)  # Cache for 5 minutes
-def fetch_data():
-    """Fetch data from Google Sheets CSV export"""
-    try:
-        # Use session to handle redirects properly
-        session = requests.Session()
-        response = session.get(SHEET_URL, allow_redirects=True)
-        response.raise_for_status()
-        
-        # Read CSV data
-        from io import StringIO
-        csv_data = StringIO(response.text)
-        df = pd.read_csv(csv_data)
-        
-        return df
-    except Exception as e:
-        st.error(f"Error fetching data: {str(e)}")
-        return None
-
-@st.cache_data(ttl=300)  # Cache for 5 minutes
-def fetch_riders_data():
-    """Fetch riders data from the Replit_Riders worksheet"""
-    try:
-        # Use session to handle redirects properly
-        session = requests.Session()
-        response = session.get(RIDERS_SHEET_URL, allow_redirects=True)
-        response.raise_for_status()
-        
-        # Read CSV data
-        from io import StringIO
-        csv_data = StringIO(response.text)
-        df = pd.read_csv(csv_data)
-        
-        return df
-    except Exception as e:
-        st.error(f"Error fetching riders data: {str(e)}")
-        return None
-
-def process_riders_data(riders_df):
-    """Process the Replit_Riders worksheet data"""
-    if riders_df is None:
-        return None
-    
-    participants = ['Jeremy', 'Leo', 'Charles', 'Aaron', 'Nate']
-    team_rosters = {participant: [] for participant in participants}
-    
-    try:
-        # Clean column names by stripping whitespace
-        riders_df.columns = riders_df.columns.str.strip()
-        
-        # Process each row in the riders DataFrame
-        for idx, row in riders_df.iterrows():
-            if pd.notna(row.get('Rider')) and pd.notna(row.get('Team')):
-                rider_name = str(row['Rider']).strip()
-                team_name = str(row['Team']).strip()
-                
-                # Add rider to the appropriate team if it's one of our participants
-                if team_name in participants:
-                    team_rosters[team_name].append(rider_name)
-    
-    except Exception as e:
-        st.error(f"Error processing rider data: {str(e)}")
-        return None
-    
-    return team_rosters
-
-def process_data(df):
-    """Process the raw CSV data to get current standings and stage-by-stage data"""
-    if df is None:
-        return None
-    
-    # Find the participant rows
-    participants = ['Jeremy', 'Leo', 'Charles', 'Aaron', 'Nate']
-    participant_data = {}
-    stage_by_stage_data = {}
-    
-    # Find the latest stage with data (non-zero times)
-    latest_stage = 1
-    
-    try:
-        # Look for participant rows in the dataframe
-        for idx, row in df.iterrows():
-            participant_name = str(row.iloc[0]).strip() if pd.notna(row.iloc[0]) else ""
-            
-            if participant_name in participants:
-                stage_times = []
-                all_stage_data = {}
-                
-                # Collect all stage times for this participant
-                for col_idx in range(1, min(22, len(row))):  # Stages 1-21
-                    if col_idx < len(row):
-                        time_val = row.iloc[col_idx]
-                        if pd.notna(time_val) and str(time_val).strip() != "0:00:00" and str(time_val).strip() != "":
-                            stage_times.append((col_idx, time_val))
-                            all_stage_data[col_idx] = {
-                                'time': time_val,
-                                'time_seconds': time_to_seconds(time_val)
-                            }
-                            latest_stage = max(latest_stage, col_idx)
-                
-                if stage_times:
-                    # Get the most recent time for current standings
-                    latest_time = stage_times[-1][1]
-                    participant_data[participant_name] = {
-                        'time': latest_time,
-                        'time_seconds': time_to_seconds(latest_time),
-                        'stage': latest_stage
-                    }
-                    
-                    # Store all stage data for charts
-                    stage_by_stage_data[participant_name] = all_stage_data
-    
-    except Exception as e:
-        st.error(f"Error processing data: {str(e)}")
-        return None
-    
-    if not participant_data:
-        st.error("No participant data found in the spreadsheet")
-        return None
-    
-    # Sort by time (ascending - lowest time wins)
-    sorted_participants = sorted(
-        participant_data.items(), 
-        key=lambda x: x[1]['time_seconds']
-    )
-    
-    # Calculate gaps from leader
-    leader_time = sorted_participants[0][1]['time_seconds']
-    for name, data in sorted_participants:
-        data['gap'] = calculate_time_gap(leader_time, data['time_seconds'])
-        data['position'] = sorted_participants.index((name, data)) + 1
-    
-    return sorted_participants, latest_stage, stage_by_stage_data
+# Data fetching functions replaced by API client
+# (fetch_fantasy_standings and fetch_stage_by_stage_data from api_client)
 
 def create_cumulative_time_chart(stage_data, latest_stage):
     """Create cumulative time progression chart"""
@@ -741,12 +593,16 @@ def create_gap_evolution_chart(stage_data, latest_stage):
     
     return fig
 
-def create_riders_display(team_rosters):
-    """Create the team riders display with cards for each team"""
-    if not team_rosters:
+def create_riders_display(rider_details):
+    """Create the team riders display with cards for each team
+
+    Args:
+        rider_details: Dictionary mapping participants to their rider details
+    """
+    if not rider_details:
         st.error("No rider data available")
         return
-    
+
     # Color scheme for team cards (matching the existing chart colors)
     team_colors = {
         'Jeremy': '#FFD700',  # Gold
@@ -755,71 +611,79 @@ def create_riders_display(team_rosters):
         'Aaron': '#45B7D1',   # Blue
         'Nate': '#96CEB4'     # Green
     }
-    
+
     st.markdown("### 👥 Team Rosters")
-    st.markdown("Current riders for each fantasy team in the Tour de France 2025")
-    
-    # Create responsive team display - stack on mobile
-    # For mobile: show one team per row, for desktop: show multiple columns
-    teams_list = list(team_rosters.items())
-    
+    st.markdown("Current riders for each fantasy team with real-time GC standings")
+
+    # Create responsive team display
+    teams_list = list(rider_details.items())
+
     # Use responsive columns that work better on mobile
     if len(teams_list) <= 2:
         cols = st.columns(len(teams_list))
         display_teams = [teams_list]
     else:
         # Split teams into rows of 2-3 for mobile compatibility
-        cols1 = st.columns(2)
-        cols2 = st.columns(2) if len(teams_list) > 2 else None
-        cols3 = st.columns(1) if len(teams_list) == 5 else None
-        
         display_teams = [teams_list[:2]]
         if len(teams_list) > 2:
             display_teams.append(teams_list[2:4])
         if len(teams_list) == 5:
             display_teams.append([teams_list[4]])
-    
-    team_idx = 0
+
     for row_teams in display_teams:
         if len(row_teams) == 1:
             cols = st.columns(1)
         else:
             cols = st.columns(len(row_teams))
-            
+
         for col_idx, (team_owner, riders) in enumerate(row_teams):
             with cols[col_idx]:
                 # Get team color
                 color = team_colors.get(team_owner, '#333333')
-                
+
                 # Display team header
                 st.markdown(f"### 🚴 {team_owner}")
                 st.markdown(f"<div style='color: {color}; font-weight: bold; margin-bottom: 10px;'>{len(riders)} Riders</div>", unsafe_allow_html=True)
-                
-                # Display riders as a simple list
+
+                # Display riders with GC info
                 if riders:
-                    for i, rider in enumerate(riders, 1):
-                        st.write(f"{i}. {rider}")
+                    for i, rider_info in enumerate(riders, 1):
+                        rider_name = rider_info.get('name', 'Unknown')
+                        rider_time = rider_info.get('time', 'N/A')
+                        rider_rank = rider_info.get('rank', '-')
+
+                        if rider_time == 'DNF':
+                            st.write(f"{i}. {rider_name} - ❌ DNF/DNS")
+                        else:
+                            st.write(f"{i}. {rider_name}")
+                            st.write(f"   GC: #{rider_rank} - {rider_time}")
                 else:
                     st.write("No riders assigned")
-                
+
                 st.markdown("---")
-    
+
     # Add summary statistics
     st.markdown("---")
-    
+
     # Create responsive summary row
-    total_riders = sum(len(riders) for riders in team_rosters.values())
-    avg_riders = total_riders / len(team_rosters) if team_rosters else 0
-    
+    total_riders = sum(len(riders) for riders in rider_details.values())
+    avg_riders = total_riders / len(rider_details) if rider_details else 0
+
+    # Count active riders (not DNF)
+    active_riders = sum(
+        1 for riders in rider_details.values()
+        for rider in riders
+        if rider.get('time', 'DNF') != 'DNF'
+    )
+
     # Use 2 columns for mobile, 3 for desktop
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Total Riders", total_riders)
     with col2:
-        st.metric("Teams", len(team_rosters))
-    
-    # Average on its own row for mobile readability
-    st.metric("Average per Team", f"{avg_riders:.1f}")
+        st.metric("Active in Race", active_riders)
+    with col3:
+        st.metric("Teams", len(rider_details))
 
 def get_dark_theme_css():
     """Return dark theme CSS with animated transitions"""
@@ -1408,22 +1272,25 @@ def main():
     # Add refresh button with mobile-friendly layout
     col1, col2 = st.columns([4, 1])
     with col2:
-        if st.button("🔄 Refresh", help="Refresh data from Google Sheets", use_container_width=True):
+        if st.button("🔄 Refresh", help="Refresh data from procyclingstats API", use_container_width=True):
             st.cache_data.clear()
             st.rerun()
     
-    # Fetch and process data
-    with st.spinner("Fetching latest standings..."):
-        df = fetch_data()
-        riders_df = fetch_riders_data()
-        processed_data = process_data(df)
-        team_rosters = process_riders_data(riders_df)
-    
-    if processed_data is None:
-        st.error("Unable to load standings data. Please check the Google Sheets connection.")
+    # Fetch and process data from procyclingstats API
+    with st.spinner("Fetching latest standings from procyclingstats..."):
+        fantasy_data = fetch_fantasy_standings()
+
+    if fantasy_data is None:
+        st.error("Unable to load standings data. Please check the API connection or ensure race data is available.")
+        st.info("💡 Make sure team rosters are configured in team_config.py and the race has started.")
         return
-    
-    sorted_participants, latest_stage, stage_by_stage_data = processed_data
+
+    sorted_participants = fantasy_data['standings']
+    latest_stage = fantasy_data['latest_stage']
+    rider_details = fantasy_data['rider_details']
+
+    # Fetch stage-by-stage data for charts
+    stage_by_stage_data = fetch_stage_by_stage_data(latest_stage)
     
     # Create main navigation tabs
     tab1, tab2, tab3 = st.tabs(["🏆 Current Standings", "📊 Stage Analysis", "👥 Team Riders"])
@@ -1448,7 +1315,7 @@ def main():
         # Display standings
         for i, (participant, data) in enumerate(sorted_participants):
             position = data['position']
-            time_str = data['time']
+            time_str = data['total_time']  # Changed from 'time' to 'total_time'
             gap = data['gap']
             
             # Create columns for the display
@@ -1598,10 +1465,10 @@ def main():
     
     with tab3:
         # Team Riders Display
-        if team_rosters:
-            create_riders_display(team_rosters)
+        if rider_details:
+            create_riders_display(rider_details)
         else:
-            st.error("Unable to load rider roster data. Please check the Google Sheets connection.")
+            st.error("Unable to load rider roster data. Please check the team configuration in team_config.py")
     
     # Add sharing section at the bottom of the application
     st.markdown("---")  # Add separator line
