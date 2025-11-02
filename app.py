@@ -240,62 +240,6 @@ def create_completion_status_card():
     </div>
     """, unsafe_allow_html=True)
 
-def generate_share_content(data):
-    """Generate dynamic content for social sharing based on current standings"""
-    if data is None or len(data) == 0:
-        return {
-            'title': "Fantasy Tour de France 2025",
-            'description': "Track real-time Fantasy Tour de France results with interactive standings and stage analysis!"
-        }
-    
-    # Get current leader
-    leader = data.iloc[0] if not data.empty else None
-    total_stages = 21  # Tour de France standard
-    
-    if leader is not None:
-        leader_name = leader.get('Name', 'Unknown')
-        current_stage = 1  # You might want to calculate this from your data
-        
-        title = f"🚴 {leader_name} leads Fantasy Tour de France!"
-        description = f"Stage {current_stage}/{total_stages} complete. Follow live standings, stage analysis, and team rosters in Sunshine's Fantasy Tour!"
-    else:
-        title = "Sunshine Fantasy Tour de France 2025"
-        description = "Track real-time Fantasy Tour de France results with interactive standings, stage analysis, and team rosters!"
-    
-    return {
-        'title': title,
-        'description': description
-    }
-
-def create_sharing_buttons():
-    """Create social media sharing buttons"""
-    current_url = "https://your-app-url.replit.app"  # Replace with actual URL
-    
-    st.markdown("### 📱 Share This App")
-    
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        twitter_url = f"https://twitter.com/intent/tweet?url={current_url}&text=Check out Fantasy Tour de France 2025 results! 🚴⚡"
-        st.markdown(f"[🐦 Tweet]({twitter_url})", unsafe_allow_html=True)
-    
-    with col2:
-        facebook_url = f"https://www.facebook.com/sharer/sharer.php?u={current_url}"
-        st.markdown(f"[👥 Facebook]({facebook_url})", unsafe_allow_html=True)
-    
-    with col3:
-        linkedin_url = f"https://www.linkedin.com/sharing/share-offsite/?url={current_url}"
-        st.markdown(f"[💼 LinkedIn]({linkedin_url})", unsafe_allow_html=True)
-    
-    with col4:
-        # Copy to clipboard button (using JavaScript)
-        st.markdown(f"""
-        <button onclick="navigator.clipboard.writeText('{current_url}'); alert('Link copied to clipboard!');" 
-                style="background-color: #2d2d2d; color: white; border: 1px solid #555; padding: 5px 10px; border-radius: 4px; cursor: pointer;">
-            📋 Copy Link
-        </button>
-        """, unsafe_allow_html=True)
-
 # Data fetching functions replaced by API client
 # (fetch_fantasy_standings and fetch_stage_by_stage_data from api_client)
 
@@ -1486,11 +1430,6 @@ def main():
             create_riders_display(rider_details)
         else:
             st.error("Unable to load rider roster data. Please check the team configuration in team_config.py")
-    
-    # Add sharing section at the bottom of the application
-    st.markdown("---")  # Add separator line
-    with st.expander("📱 Share This App", expanded=False):
-        create_sharing_buttons()
 
 if __name__ == "__main__":
     main()
