@@ -24,37 +24,37 @@ from team_config import TEAM_ROSTERS, RACE_CONFIG
 
 # Page configuration
 st.set_page_config(
-    page_title="Sunshine Fantasy Tour de France 2025",
+    page_title="Sunshine Fantasy Grand Tours",
     page_icon="🚴",
     layout="wide"
 )
 
 # Enhanced Meta Tags for URL Sharing (Open Graph, Twitter Cards, Schema.org)
 st.markdown("""
-    <meta property="og:title" content="Sunshine Fantasy Tour de France 2025 - Live Results" />
-    <meta property="og:description" content="Sunshine Fantasy Tour de France 2025" />
+    <meta property="og:title" content="Sunshine Fantasy Grand Tours - Live Results" />
+    <meta property="og:description" content="Track fantasy cycling results across Tour de France, Giro d'Italia, and Vuelta a España with real-time standings, stage analysis, and interactive charts." />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://tdf2025.replit.app/" />
+    <meta property="og:url" content="https://fantasytour.streamlit.app/" />
     <meta property="og:image" content="attached_assets/ChatGPT Image Jul 22, 2025, 02_24_08 PM_1753208677017.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="en_US" />
-    <meta property="og:site_name" content="Fantasy Tour de France 2025" />
-    
+    <meta property="og:site_name" content="Sunshine Fantasy Grand Tours" />
+
     <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Sunshine Fantasy Tour de France 2025" />
-    <meta name="twitter:description" content="Sunshine Fantasy Tour de France 2025" />
+    <meta name="twitter:title" content="Sunshine Fantasy Grand Tours" />
+    <meta name="twitter:description" content="Track fantasy cycling results across Tour de France, Giro d'Italia, and Vuelta a España with real-time standings and interactive charts." />
     <meta name="twitter:image" content="attached_assets/ChatGPT Image Jul 22, 2025, 02_24_08 PM_1753208677017.png" />
-    
+
     <!-- Schema.org Structured Data -->
     <script type="application/ld+json">
     {
         "@context": "https://schema.org",
         "@type": "WebApplication",
-        "name": "Sunshine Fantasy Tour de France 2025",
-        "description": "Sunshine Fantasy Tour de France 2025",
-        "url": "https://tdf2025.replit.app/",
+        "name": "Sunshine Fantasy Grand Tours",
+        "description": "Track fantasy cycling results across multiple Grand Tours including Tour de France, Giro d'Italia, and Vuelta a España with real-time standings, stage analysis, and interactive charts.",
+        "url": "https://fantasytour.streamlit.app/",
         "applicationCategory": "SportsApplication",
         "operatingSystem": "Web Browser",
         "offers": {
@@ -67,18 +67,18 @@ st.markdown("""
             "name": "Aaron Roy"
         },
         "datePublished": "2025-07-22",
-        "keywords": "Tour de France, Fantasy Sports, Cycling, Real-time Results, Sports Analytics"
+        "keywords": "Tour de France, Giro d'Italia, Vuelta a España, Grand Tours, Fantasy Sports, Cycling, Real-time Results, Sports Analytics, procyclingstats"
     }
     </script>
-    
+
     <!-- Additional meta tags for better indexing -->
-    <meta name="description" content="Track real-time Fantasy Tour de France results with interactive standings, stage analysis, and team rosters. See who's wearing the yellow jersey!" />
-    <meta name="keywords" content="Tour de France, Fantasy Sports, Cycling, Real-time Results, Sports Analytics, Yellow Jersey" />
+    <meta name="description" content="Track real-time fantasy cycling results across multiple Grand Tours with interactive standings, stage analysis, and team rosters. See who's wearing the leader jersey!" />
+    <meta name="keywords" content="Tour de France, Giro d'Italia, Vuelta a España, Grand Tours, Fantasy Sports, Cycling, Real-time Results, Sports Analytics, Leader Jersey, procyclingstats" />
     <meta name="author" content="Aaron Roy" />
     <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#1e1e1e" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    
+
     <!-- Favicon and Apple Touch Icons -->
     <link rel="icon" type="image/png" sizes="32x32" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚴</text></svg>" />
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚴</text></svg>" />
