@@ -1255,12 +1255,13 @@ def get_dark_theme_css(leader_color="#FFD700"):
     return css_template.replace("LEADER_COLOR_PLACEHOLDER", leader_color)
 
 def main():
-    # Initialize race selection in session state
-    if 'selected_race_id' not in st.session_state:
-        st.session_state.selected_race_id = DEFAULT_RACE
+    # Get query parameter for race from URL
+    query_params = st.query_params
+    race_from_url = query_params.get("race", DEFAULT_RACE)
 
-    # ==================== RACE SELECTOR SIDEBAR ====================
-    st.sidebar.title("🏁 Race Selection")
+    # Initialize race selection in session state from URL or default
+    if 'selected_race_id' not in st.session_state:
+        st.session_state.selected_race_id = race_from_url
 
     # Helper function to check if race is currently in progress
     def is_race_active(race):
@@ -1284,30 +1285,39 @@ def main():
             label += " 🔄"
         race_options[race['id']] = label
 
-    # Race selector dropdown
-    selected_race_id = st.sidebar.selectbox(
-        "Select Race",
-        options=list(race_options.keys()),
-        format_func=lambda x: race_options[x],
-        index=list(race_options.keys()).index(st.session_state.selected_race_id) if st.session_state.selected_race_id in race_options else 0,
-        key='race_selector'
-    )
+    # ==================== RACE SELECTOR (TOP OF PAGE) ====================
+    # Race selector at the top in columns for mobile-friendly layout
+    col1, col2 = st.columns([2, 3])
 
-    # Update session state if race changed
+    with col1:
+        selected_race_id = st.selectbox(
+            "🏁 Select Race",
+            options=list(race_options.keys()),
+            format_func=lambda x: race_options[x],
+            index=list(race_options.keys()).index(st.session_state.selected_race_id) if st.session_state.selected_race_id in race_options else 0,
+            key='race_selector'
+        )
+
+    # Update session state and URL if race changed
     if selected_race_id != st.session_state.selected_race_id:
         st.session_state.selected_race_id = selected_race_id
+        # Update URL query parameter
+        st.query_params["race"] = selected_race_id
         st.rerun()
 
     # Get config for selected race
     race_config = get_race_config(selected_race_id)
     team_rosters = get_team_rosters(selected_race_id)
 
-    # Display race info in sidebar
-    st.sidebar.markdown("---")
-    st.sidebar.markdown(f"**📅 Dates:** {race_config['start_date']} to {race_config['end_date']}")
-    st.sidebar.markdown(f"**🚴 Stages:** {race_config['total_stages']}")
-    if race_config['is_complete']:
-        st.sidebar.markdown(f"**🏆 Winner:** {race_config['winner']}")
+    # Display compact race info next to selector (vertically centered)
+    with col2:
+        info_text = f"📅 {race_config['start_date']} to {race_config['end_date']} | 🚴 {race_config['total_stages']} stages"
+        if race_config['is_complete']:
+            info_text += f" | 🏆 Winner: {race_config['winner']}"
+        st.markdown(f"<div style='display: flex; align-items: center; height: 38px; margin-top: 26px;'>{info_text}</div>", unsafe_allow_html=True)
+
+    # Reduced spacing before main content
+    st.markdown("<div style='margin-top: -10px; margin-bottom: 10px;'></div>", unsafe_allow_html=True)
 
     # Apply dark theme CSS with dynamic leader color
     st.markdown(get_dark_theme_css(leader_color=race_config['leader_color']), unsafe_allow_html=True)
@@ -1324,19 +1334,41 @@ def main():
     # Display completion status card if competition is complete
     create_completion_status_card(competition_config)
 
+    # Check if race has started and team rosters are configured
+    race_start_date = datetime.strptime(race_config['start_date'], '%Y-%m-%d').date()
+    has_race_started = datetime.now().date() >= race_start_date
+
+    # Check if team rosters are empty
+    rosters_empty = all(len(riders) == 0 for riders in team_rosters.values())
+
     # Subtitle
     if competition_config["is_complete"]:
         st.markdown("### 🏁 Final Standings")
     else:
         st.markdown("### General Classification Standings")
-    
+
+    # Show friendly message for upcoming races or empty rosters
+    if not has_race_started or rosters_empty:
+        st.info(f"""
+        ### 📅 Race Hasn't Started Yet
+
+        **{race_config['name']}** is scheduled to begin on **{race_config['start_date']}**.
+
+        Results will be displayed once:
+        - The race has started
+        - Rider rosters have been selected for each team
+
+        Check back closer to the race start date!
+        """)
+        return
+
     # Add refresh button with mobile-friendly layout
     col1, col2 = st.columns([4, 1])
     with col2:
         if st.button("🔄 Refresh", help="Refresh data from procyclingstats API", use_container_width=True):
             st.cache_data.clear()
             st.rerun()
-    
+
     # Fetch and process data from procyclingstats API
     with st.spinner("Fetching latest standings from procyclingstats..."):
         fantasy_data = fetch_fantasy_standings(race_url=race_config['race_url'])

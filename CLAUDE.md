@@ -4,7 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Fantasy Tour de France 2025 is a Streamlit web application that displays real-time fantasy cycling competition results by fetching data from the procyclingstats API. The app automatically calculates fantasy team scores based on real professional rider performance. It features a Tour de France themed interface with yellow jersey leader styling, stage-by-stage analysis charts, and comprehensive progress tracking.
+Fantasy Grand Tours is a Streamlit web application that displays real-time fantasy cycling competition results by fetching data from the procyclingstats API. The app automatically calculates fantasy team scores based on real professional rider performance.
+
+**Multi-Race Support**: The app supports multiple Grand Tours (Giro d'Italia, Tour de France, Vuelta a España) with a race selector UI. Each race has:
+- Dynamic leader jersey colors (🟡 Yellow for TDF, 🟣 Pink for Giro, 🔴 Red for Vuelta)
+- Race-specific configurations (dates, stages, rosters)
+- Shareable URLs via query parameters (e.g., `?race=tdf-2025`)
+- Mobile-optimized horizontal race selector
+
+The app features stage-by-stage analysis charts, comprehensive progress tracking, and adaptive theming based on the selected Grand Tour.
 
 ## Running the Application
 
@@ -32,23 +40,43 @@ The app fetches real race data from procyclingstats.com using the `procyclingsta
 
 ### Configuration Files
 
-1. **team_config.py**: Team roster configuration
+1. **races_config.py**: Multi-race configuration (primary)
    ```python
-   TEAM_ROSTERS = {
-       "Jeremy": ["rider/sepp-kuss", "rider/jhonatan-narvaez", ...],
-       "Leo": ["rider/felix-gall", "rider/kevin-vauquelin", ...],
-       # ... other teams
+   RACES = {
+       "tdf-2025": {
+           "id": "tdf-2025",
+           "name": "Tour de France 2025",
+           "short_name": "TDF 2025",
+           "race_url": "race/tour-de-france/2025",
+           "total_stages": 21,
+           "leader_color": "#FFD700",  # Yellow jersey
+           "leader_jersey_emoji": "🟡",
+           "start_date": "2025-07-05",
+           "end_date": "2025-07-27",
+           "is_complete": True,
+           "winner": "Aaron",
+           "completion_date": "July 27, 2025"
+       },
+       # ... other races (giro-2026, tdf-2026, vuelta-2026)
    }
 
-   RACE_CONFIG = {
-       "race_url": "race/tour-de-france/2025",
-       "race_name": "Tour de France 2025",
-       "total_stages": 21
+   TEAM_ROSTERS = {
+       "tdf-2025": {
+           "Jeremy": ["rider/sepp-kuss", "rider/jhonatan-narvaez", ...],
+           "Leo": ["rider/felix-gall", "rider/kevin-vauquelin", ...],
+           # ... other participants
+       },
+       # ... other races
    }
    ```
-   - Rider URLs follow format: `"rider/firstname-lastname"`
-   - Find riders on procyclingstats.com and copy URL path
-   - Easy to update for different races or seasons
+   - Each race has metadata, team rosters, and completion status
+   - Helper functions: `get_race_config()`, `get_team_rosters()`, `get_all_races()`
+   - Database-ready structure for future Phase 4 migration
+
+2. **team_config.py**: Backwards compatibility shim
+   - Imports from `races_config.py` but maintains old API
+   - Exists for legacy code compatibility
+   - New code should import from `races_config.py` directly
 
 2. **api_client.py**: API interaction layer
    - `fetch_fantasy_standings()`: Get current standings with calculated team scores
@@ -238,9 +266,22 @@ RACE_CONFIG = {
 
 ## Migration History
 
-**November 2025**: Migrated from Google Sheets to procyclingstats API
+**November 1, 2025**: Migrated from Google Sheets to procyclingstats API
 - Replaced manual data entry with automatic API fetching
 - Added `api_client.py` for API interactions
 - Created `team_config.py` for roster configuration
 - Updated `app.py` to use API data structure
-- See `MIGRATION_GUIDE.md` for complete migration details
+- See `MIGRATION_SUMMARY.md` for complete migration details
+
+**November 2, 2025**: Multi-Race Implementation
+- Created `races_config.py` with support for 4 Grand Tours (TDF 2025, Giro 2026, TDF 2026, Vuelta 2026)
+- Added race selector UI (moved from sidebar to top for mobile UX)
+- Implemented dynamic leader jersey colors (🟡 Yellow, 🟣 Pink, 🔴 Red)
+- Made COMPETITION_CONFIG dynamic based on selected race
+- Added URL query parameters for shareable race links (`?race=tdf-2025`)
+- Fixed Streamlit Cloud deployment issues:
+  - Added `.python-version` file (pinned to Python 3.11)
+  - Removed old Replit dependency files (`pyproject.toml`, `uv.lock`)
+- Added friendly message for upcoming races (no error spam)
+- Improved mobile responsiveness with horizontal race selector
+- See `MULTI_RACE_IMPLEMENTATION_PLAN.md` for implementation details

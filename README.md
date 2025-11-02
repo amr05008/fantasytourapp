@@ -1,17 +1,19 @@
-# Fantasy Tour de France 2025
+# Fantasy Grand Tours
 
-A Streamlit web application for tracking Fantasy Tour de France 2025 results with real-time data from Google Sheets.
+A Streamlit web application for tracking fantasy cycling competition results across multiple Grand Tours with real-time data from procyclingstats.com.
 
 ## Features
 
-- Real-time participant rankings from Google Sheets data
-- Tour de France yellow jersey styling for the leader
-- Interactive stage-by-stage performance charts
-- Team roster displays with professional riders
-- Automatic time gap calculations
-- Clean, responsive interface optimized for mobile and desktop
-- Auto-refresh functionality every 5 minutes
-- Winner celebration mode for completed competitions
+- **Multi-Race Support**: Switch between Tour de France, Giro d'Italia, and Vuelta a España
+- **Dynamic Leader Jersey Colors**: Yellow (TDF), Pink (Giro), Red (Vuelta)
+- **Real-time Race Data**: Automatic scoring from procyclingstats.com API
+- **Shareable URLs**: Direct links to specific races (e.g., `?race=tdf-2025`)
+- **Interactive Charts**: Stage-by-stage performance analysis
+- **Team Rosters**: Display professional riders for each fantasy team
+- **Automatic Calculations**: Time gaps, rankings, and team scores
+- **Mobile-Optimized**: Responsive interface with horizontal race selector
+- **Auto-refresh**: 5-minute cache for real-time updates
+- **Winner Celebrations**: Special UI for completed races
 
 ## Live Application
 
@@ -50,25 +52,34 @@ The app displays current standings for 5 participants:
 
 4. Open your browser to `http://localhost:8501`
 
+## Supported Races
+
+Currently configured Grand Tours:
+- **Tour de France 2025** ✅ (Complete - Winner: Aaron)
+- **Giro d'Italia 2026** (Upcoming)
+- **Tour de France 2026** (Upcoming)
+- **Vuelta a España 2026** (Upcoming)
+
 ## Data Source
 
-The app connects to a Google Sheets document containing:
-- Participant names and cumulative stage times (21 stages)
-- Team rider rosters for each participant
-- Real-time updates as the competition progresses
-- Automatic calculation of time gaps and rankings
+The app automatically fetches real-time race data from **procyclingstats.com**:
+- General Classification (GC) standings for all stages
+- Individual rider times and positions
+- Fantasy team scores calculated by summing rider GC times
+- Automatic handling of DNF/DNS riders
 
-See [GOOGLE_SHEETS_FORMAT.md](GOOGLE_SHEETS_FORMAT.md) for detailed data structure requirements.
+**Configuration**: Team rosters and race metadata are defined in `races_config.py`. See [CLAUDE.md](CLAUDE.md) for configuration details.
 
 ## Technology Stack
 
 - **Frontend**: Streamlit
 - **Data Processing**: Pandas
 - **Charts**: Plotly
-- **Data Fetching**: Requests
-- **Data Source**: Google Sheets CSV export
-- **Styling**: Custom CSS with Tour de France theme
+- **API Client**: procyclingstats Python package
+- **Data Source**: procyclingstats.com API
+- **Styling**: Custom CSS with dynamic Grand Tour theming
 - **Deployment**: Streamlit Cloud
+- **Python Version**: 3.11 (pinned via `.python-version`)
 
 ## Deployment
 
@@ -98,9 +109,10 @@ The app can also be deployed on:
 ## Project Documentation
 
 - [CLAUDE.md](CLAUDE.md) - Project overview and architecture
-- [STREAMLIT_MIGRATION.md](STREAMLIT_MIGRATION.md) - Deployment migration guide
-- [GOOGLE_SHEETS_FORMAT.md](GOOGLE_SHEETS_FORMAT.md) - Data format specifications
-- [replit.md](replit.md) - Historical development notes
+- [MULTI_RACE_IMPLEMENTATION_PLAN.md](MULTI_RACE_IMPLEMENTATION_PLAN.md) - Multi-race feature implementation guide
+- [MIGRATION_SUMMARY.md](MIGRATION_SUMMARY.md) - Google Sheets → procyclingstats API migration details
+- [races_config.py](races_config.py) - Multi-race configuration file
+- [STREAMLIT_MIGRATION.md](STREAMLIT_MIGRATION.md) - Deployment platform migration guide
 
 ## License
 
