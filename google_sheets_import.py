@@ -33,10 +33,7 @@ def load_rosters_from_sheet(sheet_url):
     """
     try:
         # Convert Google Sheets URL to CSV export URL
-        if '/edit' in sheet_url:
-            sheet_id = sheet_url.split('/d/')[1].split('/')[0]
-        else:
-            sheet_id = sheet_url.split('/d/')[1].split('/')[0]
+        sheet_id = sheet_url.split('/d/')[1].split('/')[0]
         
         csv_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid=0"
         
@@ -63,16 +60,18 @@ def load_rosters_from_sheet(sheet_url):
             
             for _, row in race_df.iterrows():
                 participant = row['Participant']
-                
+
                 # Skip empty participants
                 if pd.isna(participant):
                     continue
-                
+
+                participant = str(participant).strip()
+
                 # Collect all rider columns (Rider1, Rider2, Rider3, etc.)
                 riders = []
                 for col in df.columns:
-                    if col.startswith('Rider') and pd.notna(row[col]) and row[col].strip():
-                        riders.append(row[col].strip())
+                    if col.startswith('Rider') and pd.notna(row[col]) and str(row[col]).strip():
+                        riders.append(str(row[col]).strip())
                 
                 rosters[participant] = riders
             

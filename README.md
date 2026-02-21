@@ -14,6 +14,7 @@ A Streamlit web application for tracking fantasy cycling competition results acr
 - **Mobile-Optimized**: Responsive interface with horizontal race selector
 - **Auto-refresh**: 5-minute cache for real-time updates
 - **Winner Celebrations**: Special UI for completed races
+- **Google Sheets Roster Import**: Manage team rosters via a published Google Sheet without touching code
 
 ## Live Application
 
@@ -68,7 +69,7 @@ The app automatically fetches real-time race data from **procyclingstats.com**:
 - Fantasy team scores calculated by summing rider GC times
 - Automatic handling of DNF/DNS riders
 
-**Configuration**: Team rosters and race metadata are defined in `races_config.py`. See [CLAUDE.md](CLAUDE.md) for configuration details.
+**Configuration**: Team rosters and race metadata are defined in `races_config.py`. Rosters can also be managed via a published Google Sheet — see [GOOGLE_SHEETS_SETUP.md](GOOGLE_SHEETS_SETUP.md) for setup instructions. See [CLAUDE.md](CLAUDE.md) for full configuration details.
 
 ## Technology Stack
 
@@ -109,6 +110,7 @@ The app can also be deployed on:
 ## Project Documentation
 
 - [CLAUDE.md](CLAUDE.md) - Project overview and architecture
+- [GOOGLE_SHEETS_SETUP.md](GOOGLE_SHEETS_SETUP.md) - Guide for managing rosters via Google Sheets
 - [MULTI_RACE_IMPLEMENTATION_PLAN.md](MULTI_RACE_IMPLEMENTATION_PLAN.md) - Multi-race feature implementation guide
 - [MIGRATION_SUMMARY.md](MIGRATION_SUMMARY.md) - Google Sheets → procyclingstats API migration details
 - [races_config.py](races_config.py) - Multi-race configuration file

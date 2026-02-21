@@ -206,7 +206,9 @@ No database required - procyclingstats.com serves as the data source via API scr
 **Core Application Files:**
 - `app.py`: Main Streamlit application (UI and display logic)
 - `api_client.py`: API integration layer (data fetching and processing)
-- `team_config.py`: Team roster and race configuration
+- `races_config.py`: Multi-race configuration and roster management (primary config file)
+- `google_sheets_import.py`: Optional Google Sheets roster loader (1-hour cache TTL)
+- `team_config.py`: Legacy backwards-compatibility shim (imports from races_config.py)
 
 **Configuration & Requirements:**
 - `requirements.txt`: Python package dependencies
@@ -215,6 +217,7 @@ No database required - procyclingstats.com serves as the data source via API scr
 **Documentation:**
 - `README.md`: User-facing documentation
 - `CLAUDE.md`: This file - project guidance for Claude Code
+- `GOOGLE_SHEETS_SETUP.md`: Setup guide for managing rosters via Google Sheets
 - `MIGRATION_GUIDE.md`: Complete guide for Google Sheets → API migration
 - `GOOGLE_SHEETS_FORMAT.md`: Legacy Google Sheets data format (deprecated)
 - `BACKUP_STEPS.md`: Git backup instructions for Replit
