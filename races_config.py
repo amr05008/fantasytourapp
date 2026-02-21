@@ -126,6 +126,12 @@ TEAM_ROSTERS = {
 # Default active race (used when app first loads)
 DEFAULT_RACE = "tdf-2025"
 
+# ===== GOOGLE SHEETS ROSTER IMPORT =====
+# Set this to your published Google Sheets URL to enable dynamic roster loading
+# Sheet must be published to web (File → Share → Publish to web)
+# Leave as None to use hardcoded TEAM_ROSTERS above
+ROSTER_SHEET_URL = "https://docs.google.com/spreadsheets/d/1iRpOvAYQaJh2oCcIjZcLDLbJT0eGXqT0nZEXjttOOqI/edit"
+
 # Helper functions for race selection
 
 def get_race_config(race_id):
@@ -133,7 +139,29 @@ def get_race_config(race_id):
     return RACES.get(race_id, RACES[DEFAULT_RACE])
 
 def get_team_rosters(race_id):
-    """Get team rosters for a specific race"""
+    """
+    Get team rosters for a specific race
+    
+    Priority:
+    1. Google Sheets (if ROSTER_SHEET_URL is set)
+    2. Hardcoded TEAM_ROSTERS dict (fallback)
+    """
+    # Try Google Sheets import first
+    if ROSTER_SHEET_URL:
+        try:
+            from google_sheets_import import load_rosters_from_sheet
+            sheet_rosters = load_rosters_from_sheet(ROSTER_SHEET_URL)
+            
+            if race_id in sheet_rosters:
+                return sheet_rosters[race_id]
+        except ImportError:
+            # google_sheets_import.py not available
+            pass
+        except Exception:
+            # Sheet loading failed, fall back to hardcoded
+            pass
+    
+    # Fallback to hardcoded rosters
     return TEAM_ROSTERS.get(race_id, TEAM_ROSTERS[DEFAULT_RACE])
 
 def get_all_races():
