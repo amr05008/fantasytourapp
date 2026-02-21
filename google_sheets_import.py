@@ -43,6 +43,9 @@ def load_rosters_from_sheet(sheet_url):
         # Load CSV data
         df = pd.read_csv(csv_url)
         
+        # Strip whitespace from column names
+        df.columns = df.columns.str.strip()
+        
         # Validate required columns
         if 'Race ID' not in df.columns or 'Participant' not in df.columns:
             raise ValueError("Sheet must have 'Race ID' and 'Participant' columns")
