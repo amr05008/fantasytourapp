@@ -1375,7 +1375,7 @@ def main():
 
     if fantasy_data is None:
         st.error("Unable to load standings data. Please check the API connection or ensure race data is available.")
-        st.info("💡 Make sure team rosters are configured in team_config.py and the race has started.")
+        st.info("💡 Make sure team rosters are configured in races_config.py (or Google Sheet) and the race has started.")
         return
 
     sorted_participants = fantasy_data['standings']
@@ -1536,7 +1536,7 @@ def main():
         if rider_details:
             create_riders_display(rider_details)
         else:
-            st.error("Unable to load rider roster data. Please check the team configuration in team_config.py")
+            st.error("Unable to load rider roster data. Please check the team configuration in races_config.py")
 
 if __name__ == "__main__":
     main()
